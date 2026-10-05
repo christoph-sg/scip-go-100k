@@ -10,20 +10,18 @@ It has one Go file, no dependencies, and exactly **100,000 occurrences in
 
 The source file is about 700 KB, with 20 references per line. Hover or navigate
 from any `Value` reference to exercise code navigation. The last lines are beyond
-the 50,000-occurrence cap. `index.scip` is already generated and ignored by Git.
+the 50,000-occurrence cap. Generated `index.scip` files are ignored by Git.
 
 ## Regenerate and index
 
 ```sh
-cd /private/tmp/scip-go-100k
+git clone https://github.com/christoph-sg/scip-go-100k.git
+cd scip-go-100k
 python3 generate.py
 gofmt -w occurrences.go
 go test ./...
 
-# This machine's mise shim has no selected scip-go installation.
-# Use the installed binary directly, or substitute your own scip-go path.
-SCIP_GO=/Users/christoph/.local/share/mise/installs/go/1.27.0/bin/scip-go
-"$SCIP_GO" index --repository-remote=example.com/scip-go-100k
+scip-go index --repository-remote=github.com/christoph-sg/scip-go-100k
 ```
 
 To generate a different total, use e.g. `python3 generate.py 50001`, format,
@@ -43,8 +41,17 @@ scip print --json index.scip | jq '.documents[] | {
 Expected: one document named `occurrences.go`, 100000 occurrences, 3 definitions.
 `go test ./...` checks that the generated package compiles; there are no tests.
 
-The repository is local-only and has an initial commit on `main`. To browse it
-in Sourcegraph, make this Git repository available to your development instance
-and upload `index.scip` against that repository name and commit. The
-`example.com/scip-go-100k` module/remote name is a fixture identifier, not a hosted
-repository.
+## Use with a local Sourcegraph instance
+
+Sync `github.com/christoph-sg/scip-go-100k` through your instance's GitHub code
+host connection. After indexing locally, authenticate `src` to your instance
+and upload the index from this repository's root:
+
+```sh
+SRC_ENDPOINT=https://sourcegraph.test:3443 src code-intel upload \
+  -repo=github.com/christoph-sg/scip-go-100k -file=index.scip
+```
+
+Adjust the endpoint to your development instance. The upload uses the current
+Git commit. Once processing completes, open `occurrences.go` on `main` to test
+the warning and on-demand code navigation beyond the 50,000-occurrence limit.
