@@ -1,3 +1,5 @@
+Hello
+
 # Go fixture with 100,000 SCIP occurrences
 
 This standalone Git repository reproduces the per-file occurrence limit in
